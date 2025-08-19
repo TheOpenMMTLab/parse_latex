@@ -1,0 +1,41 @@
+\anforderung[
+    ursprung=Rail:UC:Tfz,
+]
+    {Rail:Komm:Integr:Tfz}
+    {Kommunikationsinfrastruktur}
+    {muss}
+    {Integrität der Datenverbindung zwischen Stellwerk und Triebfahrzeug}
+    {sicherstellen}
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[max width=\textwidth]{abbildungen/SysML1_6_UseCaseDiagram_OBU_IXL.pdf}
+  \caption{Anwendungsfalldiagramm (\proper{SysML}) Stellwerk Triebfahrzeug}
+\end{figure}
+
+\entscheidung
+  {Ent:Beispiel} % Kennung
+  {\useid{Rail:Req:DistanzUnlimitiert}} % Problem
+  {\usealt{1} Es wird der SuperLaser3000 der Fa.\ ThüriLicht verwendet} % Lösung
+  {\defalt{1} Handelsüblicher Laserpointer als Photonenquelle: Günstig aber technisch ungenügend.} % Alternativen
+  {vorgeschlagen} % Status
+
+Noch einiges an Text.
+
+\paragraph{Nichtfunktionale Anforderungen}
+
+\begin{itemize}
+    \item \anforderung
+      {All:Req:quantensicher}
+      {Das System}
+      {muss}
+      {gegenüber kryptographischen Angriffen mit Quantencomputern}
+      {die IT-Sicherheit wahren}
+
+    \item \anforderung
+      {Rail:Req:Schlüsselrate}
+      {Das System}
+      {muss}
+      {Schlüssel in einer für das erwartete Datenvolumen ausreichenden Rate}
+      {bereitstellen}
+\end{itemize}
