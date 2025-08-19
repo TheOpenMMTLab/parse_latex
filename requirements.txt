@@ -4,3 +4,4 @@ obse==1.2.0
 py_sysml_rdf==0.0.3
 git+https://github.com/TheOpenMMTLab/adm-rdf-model.git
 pylatexenc==2.10
+pytest
