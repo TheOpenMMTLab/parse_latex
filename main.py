@@ -1,8 +1,10 @@
 import argparse
-from parselatex.parse import parse_anforderung
-from rdflib import Graph, URIRef, RDFS
+from parselatex.parse import parse_latex
+from rdflib import Graph
 from py_sysml_rdf import SYSML
 from obse.graphwrapper import GraphWrapper, create_ref
+from parselatex.create_rdf_model import create_rdf_model
+
 
 def parse_args():
     # Parse command line arguments
@@ -16,32 +18,10 @@ def parse_args():
 
 input_latex, output_rdf = parse_args()
 
-
-# Create RDF model
-graph = Graph()
-
-# Bind a user-declared namespace to a prefix
-graph.bind("sysml", SYSML)
-
-wrapper = GraphWrapper(graph)
-
-
 latex_code = open(input_latex, 'r', encoding='utf-8').read()
 
-for anforderung in parse_anforderung(latex_code):
-    print("--- Anforderung ---")
-    print("Optionen:", anforderung['options'])
-    print("Modality:", anforderung['modality'])
-    print("Id:", anforderung['id'])
-    print("Text:", anforderung['text'])
-    print()
+content = parse_latex(latex_code)
 
-    requirement_rdf = wrapper.add_labeled_instance(SYSML.Requirement, anforderung['id'])
-    wrapper.add_str_property(SYSML.requirementText, requirement_rdf, anforderung["text"])
-    wrapper.add_str_property(SYSML.requirementId, requirement_rdf, anforderung["id"])
-    if "ursprung" in anforderung['options']:
-        parent_requirement_rdf = create_ref(SYSML.Requirement, anforderung['options']['ursprung'])
-        wrapper.add_reference(SYSML.nestedRequirement, parent_requirement_rdf, requirement_rdf)
-
+graph = create_rdf_model(content)
 
 graph.serialize(destination=output_rdf, format='turtle')

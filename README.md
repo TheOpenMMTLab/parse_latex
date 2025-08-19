@@ -1,10 +1,21 @@
 
 
+# install 
+
+pip install -r requirements.txtx
 
 
-python main.py --input-latex requirements.tex --output-rdf requirements.ttl
+# usage
+
+python main.py --input-latex text.tex --output-rdf model.ttl
 
 
-docker image
+# tests 
+
+python -m pytest tests
+
+# docker image
 
 $ docker build -t frittenburger/parselatex:dev .
+
+

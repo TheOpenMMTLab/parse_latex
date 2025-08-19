@@ -1,7 +1,12 @@
-import re
+from pylatexenc.latexwalker import LatexWalker, LatexEnvironmentNode, LatexMacroNode, LatexCharsNode, LatexGroupNode, LatexCommentNode
+from .decision import parse_decision
+from .requirement import parse_requirement
+from .macro import Macro
+from .group import Group
+from .text import Text
 
 
-def parse_options(options_text):
+def parse_options(options_text: str) -> dict:
     """
     Parses LaTeX macro options into a dictionary.
 
@@ -27,50 +32,79 @@ def parse_options(options_text):
     return result
 
 
-def parse_anforderung(latex_code):
-    """
-    Parses the LaTeX code for the \anforderung macro and extracts its components.
-    
-    Returns a list of dictionaries with the parsed components.
-    """
-    pattern = r"""
-    \\anforderung      # The macro itself
-    \s*
-    \[
-    (.*?)              # Optional parameters (non-greedy)
-    \]
-    \s*
-    \{
-    (.*?)              # 1st mandatory parameter
-    \}
-    \s*
-    \{
-    (.*?)              # 2nd mandatory parameter
-    \}
-    \s*
-    \{
-    (.*?)              # 3rd mandatory parameter
-    \}
-    \s*
-    \{
-    (.*?)              # 4th mandatory parameter
-    \}
-    \s*
-    \{
-    (.*?)              # 5th mandatory parameter
-    \}
-    """
+def parse_nodes(nodes):
 
-    regex = re.compile(pattern, re.DOTALL | re.VERBOSE)
+    elements = []
+    macro = None
 
-    for match in regex.finditer(latex_code):
-        options = match.group(1).strip()
-        options_dict = parse_options(options)
-        params = [match.group(i).strip() for i in range(2, 7)]
+    for n in nodes:
 
-        yield {
-            'options': options_dict,
-            'id': params[0],
-            'modality': params[2],
-            'text': ' '.join(params[1:])+'.'
-        }
+        if isinstance(n, LatexCommentNode):
+            continue
+
+        if isinstance(n, LatexMacroNode):
+            macro = Macro(n.macroname)
+            elements.append(macro)
+            continue
+
+        if macro:
+            if isinstance(n, LatexCharsNode):
+                text = n.chars.strip()
+                if len(text) == 0:
+                    continue
+
+                # if options
+                if text.startswith("[") and text.endswith("]"):
+                    macro.setOptions(parse_options(text[1:-1]))
+                    continue
+
+                # Ende vom MAcro
+                macro = None
+                elements.append(Text(text))
+                continue
+
+            if isinstance(n, LatexGroupNode):
+                childs = parse_nodes(n.nodelist)
+                if len(childs) == 1:
+                    macro.addArgument(childs[0])
+                else:
+                    macro.addArgument(Group(childs))
+                continue
+
+            if not isinstance(n, LatexEnvironmentNode):
+                raise ValueError(f"Unknown type {type(n)}")
+
+            # Ende macro
+            macro = None
+
+        if isinstance(n, LatexEnvironmentNode):
+            childs = parse_nodes(n.nodelist)
+            elements.extend(childs)
+            continue
+
+        if isinstance(n, LatexCharsNode):
+            text = n.chars.strip()
+            if len(text) == 0:
+                continue
+            elements.append(Text(text))
+
+    return elements
+
+
+def parse_latex(content: str):
+
+    result = []
+    walker = LatexWalker(content)
+    nodes, _, _ = walker.get_latex_nodes(pos=0)
+
+    for e in parse_nodes(nodes):
+        if isinstance(e, Macro):
+            if e.name == "entscheidung":
+                decision = parse_decision(e)
+                result.append(decision)
+
+            elif e.name == "anforderung":
+                requirement = parse_requirement(e)
+                result.append(requirement)
+
+    return result
