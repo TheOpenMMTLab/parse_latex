@@ -1,7 +1,6 @@
 rdflib==7.1.4
 argparse==1.4.0
-obse==1.2.0
-py_sysml_rdf==0.0.3
-git+https://github.com/TheOpenMMTLab/adm-rdf-model.git
+py_traceability_rdf==0.2.0
+obse==2.0.0
 pylatexenc==2.10
 pytest

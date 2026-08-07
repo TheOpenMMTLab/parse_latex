@@ -2,7 +2,7 @@
 
 # install 
 
-pip install -r requirements.txtx
+pip install -r requirements.txt
 
 
 # usage

@@ -1,15 +1,14 @@
 import argparse
 from parselatex.parse import parse_latex
 from rdflib import Graph
-from py_sysml_rdf import SYSML
-from obse.graphwrapper import GraphWrapper, create_ref
+from obse.graphwrapper import GraphWrapper
 from parselatex.create_rdf_model import create_rdf_model
 
 
 def parse_args():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='SysMP to RDF Transformation.')
-    parser.add_argument("--input-latex", required=True, help="Inputfile in SysML Format")
+    parser.add_argument("--input-latex", required=True, help="Inputfile in LaTeX Format")
     parser.add_argument("--output-rdf", required=True, help="Outputfile in RDF Format")
     args = parser.parse_args()
 
