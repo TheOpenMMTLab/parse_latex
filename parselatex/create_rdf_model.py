@@ -19,7 +19,7 @@ def create_rdf_model(collector):
         print(entity)
 
         if isinstance(entity, Requirement):
-            requirement_rdf = wrapper.add_labeled_instance(Traceability.Requirement, entity.id)
+            requirement_rdf = wrapper.add_typed_instance(Traceability.Requirement, entity.id, label=entity.id)
             wrapper.add_str_property(Traceability.identifier, requirement_rdf, entity.id)
             wrapper.add_str_property(Traceability.title, requirement_rdf, entity.text)
             if "ursprung" in entity.options:
@@ -27,11 +27,11 @@ def create_rdf_model(collector):
                 wrapper.add_reference(Traceability.contains, parent_rdf, requirement_rdf)
 
         if isinstance(entity, Decision):
-            decision_rdf = wrapper.add_labeled_instance(Traceability.Decision, entity.id)
+            decision_rdf = wrapper.add_typed_instance(Traceability.Decision, entity.id, label=entity.id)
             wrapper.add_str_property(Traceability.identifier, decision_rdf, entity.id)
             wrapper.add_str_property(Traceability.decisionStatus, decision_rdf, entity.state)
 
-            rationale_rdf = wrapper.add_labeled_instance(Traceability.Rationale, entity.reference)
+            rationale_rdf = wrapper.add_typed_instance(Traceability.Rationale, entity.reference, label=entity.reference)
             wrapper.add_reference(Traceability.isJustifiedBy, decision_rdf, rationale_rdf)
 
             #if entity.selected:

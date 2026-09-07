@@ -1,6 +1,8 @@
 rdflib==7.1.4
 argparse==1.4.0
-py_traceability_rdf==0.2.0
-obse==2.0.0
+#py_traceability_rdf==0.2.0
+git+https://github.com/TheOpenMMTLab/traceability-rdf-model.git@change/update-testcase-relations
+#obse==2.0.0
+git+https://github.com/dfriedenberger/obse
 pylatexenc==2.10
 pytest
