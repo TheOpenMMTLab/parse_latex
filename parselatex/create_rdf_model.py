@@ -23,7 +23,7 @@ def create_rdf_model(collector):
             wrapper.add_str_property(Traceability.identifier, requirement_rdf, entity.id)
             wrapper.add_str_property(Traceability.title, requirement_rdf, entity.text)
             if "ursprung" in entity.options:
-                parent_rdf = wrapper.create_ref(Traceability.Requirement, entity.options["ursprung"])
+                parent_rdf = wrapper.create_ref(None, entity.options["ursprung"])
                 wrapper.add_reference(Traceability.contains, parent_rdf, requirement_rdf)
 
         if isinstance(entity, Decision):
