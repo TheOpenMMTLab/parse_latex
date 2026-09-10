@@ -41,8 +41,17 @@ def get_text(n) -> str:
     if isinstance(n, Macro) and len(n.arguments) == 0 and n.name == "zb":
         return "z.B."
 
-    if isinstance(n, Macro) and len(n.arguments) == 1 and n.name in ["gls", "glsentrytext"]:
+    if isinstance(n, Macro) and len(n.arguments) == 1 and n.name in ["gls", "glsentrytext", "glspl"]:
         return get_text(n.arguments[0])
+    
+    # Handle formatting macros like \emph, \textbf, etc. with their content
+    if isinstance(n, Macro) and len(n.arguments) >= 1 and n.name in ["emph", "textbf", "textit", "texttt", "textup", "textsl", "textsf", "textmd", "textnum", "proper"]:
+        return get_text(n.arguments[0])
+    
+    # Handle macros with 0 arguments that we don't know about - just skip them
+    if isinstance(n, Macro) and len(n.arguments) == 0:
+        return ""
+    
     if isinstance(n, Macro) and len(n.arguments) == 2 and n.name == "SI":
         return get_text(n.arguments[0]) + " " + get_si_unit(n.arguments[1])
     

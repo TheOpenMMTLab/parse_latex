@@ -1,5 +1,4 @@
-from typing import Dict, Tuple
-from .group import Group
+from typing import List
 from .macro import Macro
 
 from .parse_util import get_text, get_id, to_list
@@ -7,70 +6,64 @@ from .parse_util import get_text, get_id, to_list
 
 class Decision:
 
-    def __init__(self, id, reference: str, selected: Tuple[str, str], alternatives: Dict[str, str], state: str):
+    def __init__(self, id: str, state: str, references: List[str], problem: str, alternatives: List[str]):
         self.id = id
-        self.reference = reference
-        self.selected = selected
-        self.alternatives = alternatives
         self.state = state
+        self.references = references  # List of reference IDs
+        self.problem = problem        # Problem description text
+        self.alternatives = alternatives  # List of alternative descriptions (non-empty only)
 
     def __repr__(self):
-        return (f"Decision(id={self.id}, alternatives={self.alternatives}, "
-                f"selected={self.selected}, state={self.state})")
-
-
-def parse_reference(n) -> str:
-    if isinstance(n, Macro):
-        if n.name == "useid" and len(n.arguments) == 1:
-            return get_text(n.arguments[0])
-    raise ValueError(f"Expected useid Macro 'useid', got {type(n)}")
-
-
-def parse_selected(n) -> Tuple[str, str]:
-    sel_id = None
-    text = ""
-    selected = to_list(n)
-    for item in selected:
-        if isinstance(item, Macro) and item.name == "usealt":
-            if sel_id:
-                raise ValueError(f"Expected only one usealt Macro in {selected}")
-            sel_id = get_id(item)
-            continue
-        text += get_text(item)
-
-    if sel_id is None:  # no decision
-        return None
-
-    return sel_id, text.strip()
-
-
-def parse_alternatives(n) -> Dict[str, str]:
-    altdef = to_list(n)
-    alt_id = None
-    result = {}
-    for item in altdef:
-        if isinstance(item, Macro) and item.name == "defalt":
-            alt_id = get_id(item)
-            if alt_id in result:
-                raise ValueError(f"Duplicate defalt Macro id found: {alt_id}")
-            result[alt_id] = ""
-            continue
-        if alt_id is None:
-            raise ValueError(f"Expected defalt Macro with an id, got {altdef}")
-        result[alt_id] += get_text(item)
-
-    return result
+        return (f"Decision(id={self.id}, state={self.state}, "
+                f"references={self.references}, alternatives={self.alternatives})")
 
 
 def parse_decision(macro) -> Decision:
     assert len(macro.options) == 0, "Expected no options in Decision"
-    if len(macro.arguments) != 5:
-        raise ValueError(f"Expected 5 arguments in Decision, got {len(macro.arguments)}: {macro.arguments}")
+    if len(macro.arguments) != 9:
+        raise ValueError(f"Expected 9 arguments in Decision, got {len(macro.arguments)}: {macro.arguments}")
+
+    return parse_decision_format(macro)
+
+
+def parse_decision_format(macro) -> Decision:
+    """Parse the decision format with nine arguments."""
+    # Argument 0: ID
+    decision_id = get_text(macro.arguments[0])
+
+    # Argument 1: State
+    state = get_text(macro.arguments[1])
+
+    # Argument 2: References (can have multiple \useid macros)
+    references = parse_references(macro.arguments[2])
+
+    # Argument 3: Problem description
+    problem = get_text(macro.arguments[3])
+
+    # Arguments 4-8: Alternatives (collect only non-empty ones)
+    alternatives = []
+    for i in range(4, 9):
+        alt_text = get_text(macro.arguments[i]).strip()
+        if alt_text:  # Only add non-empty alternatives
+            alternatives.append(alt_text)
 
     return Decision(
-        id=get_text(macro.arguments[0]) ,
-        reference=parse_reference(macro.arguments[1]),
-        selected=parse_selected(macro.arguments[2]),
-        alternatives=parse_alternatives(macro.arguments[3]),
-        state=get_text(macro.arguments[4])
+        id=decision_id,
+        state=state,
+        references=references,
+        problem=problem,
+        alternatives=alternatives
     )
+
+
+def parse_references(n) -> List[str]:
+    """Parse references from the references argument (can contain multiple \\useid macros)"""
+    references = []
+    items = to_list(n)
+
+    for item in items:
+        if isinstance(item, Macro) and item.name == "useid":
+            ref_id = get_id(item)
+            references.append(ref_id)
+
+    return references

@@ -1,4 +1,4 @@
-from pylatexenc.latexwalker import LatexWalker, LatexEnvironmentNode, LatexMacroNode, LatexCharsNode, LatexGroupNode, LatexCommentNode
+from pylatexenc.latexwalker import LatexWalker, LatexEnvironmentNode, LatexMacroNode, LatexCharsNode, LatexGroupNode, LatexCommentNode, LatexSpecialsNode
 from .decision import parse_decision
 from .requirement import parse_requirement
 from .macro import Macro
@@ -42,8 +42,9 @@ def parse_nodes(nodes):
         if isinstance(n, LatexCommentNode):
             continue
 
-        if isinstance(n, LatexMacroNode):
+        if isinstance(n, LatexMacroNode): 
             macro = Macro(n.macroname)
+        
             elements.append(macro)
             continue
 
@@ -71,8 +72,14 @@ def parse_nodes(nodes):
                     macro.addArgument(Group(childs))
                 continue
 
+            if isinstance(n, LatexSpecialsNode):
+                # Ende macro, treat special chars as text
+                macro = None
+                elements.append(Text(n.specials_chars))
+                continue
+
             if not isinstance(n, LatexEnvironmentNode):
-                raise ValueError(f"Unknown type {type(n)}")
+                raise ValueError(f"Unknown type {type(n)} macro={macro} n={n}")
 
             # Ende macro
             macro = None
@@ -87,6 +94,9 @@ def parse_nodes(nodes):
             if len(text) == 0:
                 continue
             elements.append(Text(text))
+
+        if isinstance(n, LatexSpecialsNode):
+            elements.append(Text(n.specials_chars))
 
     return elements
 

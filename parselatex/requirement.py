@@ -1,5 +1,5 @@
 from .macro import Macro
-from .parse_util import get_text, get_id
+from .parse_util import get_text
 
 
 class Requirement:
